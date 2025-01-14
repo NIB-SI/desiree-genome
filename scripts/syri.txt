@@ -1,0 +1,43 @@
+
+# csv input:
+#hap1.fa,hap1
+#hap2.fa,hap2
+#hap3.fa,hap3
+#hap4.fa,hap4
+
+# create array of names
+mapfile -t names < <(cut -d, -f2 $csv)
+
+# loop trough sequeintial asms pairs and map 
+conda activate mapping
+for ((i=0; i<${#names[@]}-1; i++)); do
+  minimap2 -ax asm5 -t $threads --eqx \
+  "${names[i]}".fa "${names[i+1]}".fa | \
+  samtools sort -o "${names[i]}"_"${names[i+1]}".bam
+done
+conda deactivate
+
+# Run syri on pairs
+conda activate syri
+for ((i=0; i<${#names[@]}-1; i++)); do
+syri \
+-c "${names[i]}"_"${names[i+1]}".bam \
+-r "${names[i]}".fa -q "${names[i+1]}".fa \
+-F B --prefix "${names[i]}"_"${names[i+1]}"
+done
+
+# plot
+plotsr \
+--sr hap1_hap2syri.out \
+--sr hap2_hap3syri.out \
+--sr hap3_hap4syri.out \
+--genomes genomes.txt \
+--tracks tracks.txt \
+-o plot_anno.png
+
+#genomes.txt:
+#file	name	tags
+#hap1.fa	hap1	lw:1.5;lc:#384259
+#hap2.fa	hap2	lw:1.5;lc:#F73859
+#hap3.fa	hap3	lw:1.5;lc:#7AC7C4
+#hap4.fa	hap4	lw:1.5;lc:#C4EDDE

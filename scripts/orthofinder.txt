@@ -1,0 +1,21 @@
+# Prepare protein files:
+## csv file contains assembly and associated genes in gff
+while IFS=, read asm in_gff; do
+gff_name=$(basename -s .gff $in_gff)
+    conda activate gfftools
+    gffread -S -y \
+    $out_dir/$gff_name.faa.tmp \
+    -g $asm \
+    $in_gff
+    seqkit replace -p "\s.+" \
+    $out_dir/$gff_name.faa.tmp > \
+    $out_dir/$gff_name.faa
+    rm $out_dir/$gff_name.faa.tmp
+    conda deactivate
+done < $csv
+
+# Run orthofinder
+conda activate orthofinder
+orthofinder -t $threads \
+-f $out_dir
+conda deactivate

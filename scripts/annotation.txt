@@ -1,0 +1,196 @@
+
+# Predict repeats [EDTA]
+
+EDTA.pl \
+--genome $asm \
+--cds $cds \
+--sensitive 1 \
+--anno 1 \
+--evaluate 1 \
+--threads $threads
+
+# Transfer gene models from reference [liftoff]
+
+## csv input contains reference genome fasta; gff name; reference gff
+while IFS=, read ref gff_name ref_gff extra_params; do
+ref_name=$(basename -s .fa $ref)
+extra_params_expanded=$(eval "echo ${extra_params}")
+liftoff \
+-p $threads \
+$extra_params_expanded \
+-chroms $in_dir/$ref_name.chroms.txt \
+$asm \
+$ref \
+-g $ref_gff \
+-o $out_dir/$asm_name."$gff_name"_liftoff.gff3 \
+-u $out_dir/$asm_name."$gff_name"_liftoff_unmapped.txt \
+-dir $out_dir/"$gff_name"_intermediate_files
+# rename polished gff
+mv $out_dir/$asm_name."$gff_name"_liftoff.gff3_polished \
+$out_dir/$asm_name."$gff_name"_liftoff_polished.gff3
+done < $csv
+
+# Map short-read transcriptomes [STAR]
+
+for set in $(basename -a $reads_dir/*.fq.gz | cut -d_ -f1 | uniq)
+do
+mkdir $out_dir/$set
+STAR \
+--runMode alignReads \
+--runThreadN $threads \
+--readFilesIn $reads_dir/"$set"_1.fq.gz $reads_dir/"$set"_2.fq.gz \
+--genomeDir $asm_dir \
+--readFilesCommand zcat \
+--outFileNamePrefix $out_dir/$set/ \
+--outSAMstrandField intronMotif \
+--outSAMattributes All \
+--outSAMattrIHstart 0 \
+--outSAMtype BAM SortedByCoordinate \
+--limitBAMsortRAM 100000000000
+done
+
+# Assembly transcripts from shor-read mappings
+
+for set in $illumina_mappings/*/
+do
+  set_name=$(basename $set)
+  stringtie \
+  $set/Aligned.sortedByCoord.out.bam \
+  -o $out_dir/$set_name.gtf \
+  -p $threads\
+  --rf \
+  -l STRG-$set_name
+done
+
+# Map iso-seq reads [minimap2]
+
+for set_dir in $isoseq_data/*/
+do
+ set_name=$(basename $set_dir)
+ mkdir $out_base/$asm_name/$set_name
+ for reads in $set_dir/*.fq.gz
+  do 
+   reads_name=$(basename -s .fq.gz $reads)
+   minimap2 \
+   -ax splice:hq -uf \
+   -G 5k \
+   --junc-bed $junc \
+   -t $threads \
+   $asm \
+   $reads | \
+   samtools sort -@ $threads \
+   -o $out_base/$asm_name/$set_name/$reads_name.bam
+ done
+ # merge samples by set
+ samtools merge \
+ $out_base/$asm_name/$set_name.merged.bam \
+ $out_base/$asm_name/$set_name/*.bam
+ # index merged set bams
+ samtools index $out_base/$asm_name/$set_name.merged.bam
+done
+conda deactivate
+
+# Collapse redundant iso-seq transcripts [tama-collapse]
+
+ for bam in $isoseq_mappings/*.merged.bam
+  do 
+   bam_name=$(basename -s .merged.bam $bam)
+   python tama_collapse.py \
+   -b BAM -s $bam \
+   -f $asm \
+   -p $out_dir/$bam_name \
+   -x no_cap
+ done
+conda deactivate
+
+# Validate junctions and filter mappings [portcullis]
+
+portcullis full \
+-t $threads \
+$asm \
+--output $out_dir \
+--bam_filter \
+$illumina_mappings/*/Aligned.sortedByCoord.out.bam
+
+# Predict transcripts with braker [BRAKER3]
+
+braker.pl \
+--genome=$masked_asm \
+--prot_seq=$prot \
+--bam=$bams \
+--workingdir=$out_dir \
+--threads $threads \
+--busco_lineage solanales_odb10 &> \
+$out_dir/braker_run.log
+
+# Choose best trabscripts [mikado]
+
+## 1 CONFIGURE
+mikado configure \
+--list $out_dir/inputs.txt \
+--reference $asm \
+--mode permissive \
+--check-references \
+--scoring plant.yaml \
+--copy-scoring $out_dir/plant.yaml \
+--threads $threads \
+--out-dir $out_dir \
+--junctions $junc \
+--blast_targets $prot \
+$out_dir/configuration.yaml
+
+## 2 PREPARE
+mikado prepare \
+--procs $threads \
+--json-conf $out_dir/configuration.yaml
+
+## 3 BLAST
+makeblastdb \
+-in $out_dir/blast/$prot_name.fa \
+-dbtype prot -parse_seqids > \
+$out_dir/blast/"$prot_name"_prepare.log
+
+blastx -max_target_seqs 5 \
+-outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore ppos btop" \
+-num_threads $threads \
+-query $out_dir/mikado_prepared.fasta \
+-db $out_dir/blast/$prot_name.fa \
+-out $out_dir/mikado_prepared.blast.tsv
+
+## 4 ORF predictions [transdecoder]
+TransDecoder.LongOrfs \
+-t $out_dir/mikado_prepared.fasta \
+--output_dir $out_dir
+
+TransDecoder.Predict \
+-t $out_dir/mikado_prepared.fasta \
+--output_dir $out_dir
+
+## 5 SERIALZE
+mikado serialise \
+--procs $threads \
+--json-conf $out_dir/configuration.yaml \
+--orfs $out_dir/mikado_prepared.fasta.transdecoder.bed \
+--tsv $out_dir/mikado_prepared.blast.tsv \
+--blast_targets $out_dir/blast/uniprot_plants_simple_prefix.fa
+
+## 6 PICK
+mikado pick \
+--procs $threads \
+--configuration $out_dir/configuration_$version.yaml \
+--subloci-out $out_dir/mikado.subloci.gff3
+
+# Functional annotation [emapper]
+
+emapper.py \
+-m diamond \
+--data_dir $data_dir \
+-i $prot \
+--dbmem \
+--decorate_gff $in_gff \
+--decorate_gff_ID_field ID \
+--cpu $threads \
+-o $asm_name.$version \
+--output_dir $out_dir \
+--tax_scope 33090 > $out_dir/run.log 2>&1
+

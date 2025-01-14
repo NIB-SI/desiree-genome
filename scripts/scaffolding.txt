@@ -1,0 +1,57 @@
+
+# Map Hi-C reads to asm [bwa and pairtools]
+
+## index assembly and create chrom sizes file
+bwa index -a bwtsw $asm
+samtools faidx $asm
+cut -f1,2 $asm.fai > \
+$asm.genome 
+
+## mapping
+bwa mem \
+-5SP -T0 -t $threads \$asm $hic_1 $hic_2 > \
+$out_dir/mapped.bam
+
+## processing
+pairtools parse \
+--min-mapq 40 --walks-policy 5unique \
+--max-inter-align-gap 30 --nproc-in $threads --nproc-out $threads \
+--chroms-path $asm.genome \
+--output-stats $out_dir/parse.stats \
+$out_dir/mapped.bam | \
+pairtools sort --nproc $threads | \
+pairtools dedup --nproc-in $threads --nproc-out $threads --mark-dups \
+--output-stats /$out_dir/dedup.stats | \
+pairtools split --nproc-in $threads --nproc-out $threads \
+--output-pairs $out_dir/mapped.pairs --output-sam - | \
+samtools view -bS -@ $threads | \
+samtools sort -@ $threads -o $out_dir/mapped.PT.bam 
+samtools index $out_dir/mapped.PT.bam
+conda deactivate
+
+# Scaffold contigs [yahs]
+
+## index assembly
+samtools faidx $asm
+
+## run YaHS
+yahs \
+-o $out_dir/yahs \
+--no-contig-ec \
+$asm \
+$bam
+
+## run juicer to convert bin to hic for loading into JBAT
+juicer pre \
+-a -o $out_dir/yahs_jbat \
+$out_dir/yahs.bin \
+$out_dir/yahs_scaffolds_final.agp \
+$asm.fai > \
+$out_dir/yahs_jbat.log 2>&1
+
+java -jar -Xmx500G juicer_tools_1.22.01.jar pre \
+--threads $threads \
+$out_dir/yahs_jbat.txt \
+$out_dir/yahs_jbat.hic.part <(cat $out_dir/yahs_jbat.log | grep PRE_C_SIZE | awk '{print $2" "$3}')
+
+mv $out_dir/yahs_jbat.hic.part $out_dir/yahs_jbat.hic

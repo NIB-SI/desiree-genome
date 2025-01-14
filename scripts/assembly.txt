@@ -1,0 +1,108 @@
+
+# Genomscope using illumina reads
+
+## count
+jellyfish count |
+-C -m 21 -s 3000000000 -t 18 \
+$illumina_1 $illumina_2 \
+-o $wd/illumina.jf
+
+## export histogram
+jellyfish histo -t 18 \
+$wd/illumina.jf > \
+$wd/illumina.jf.histo
+
+# run genomescope
+genomescope2 -k 21 -p 4 \
+-i $wd/illumina.jf.histo \
+-o $wd
+
+
+# Create initial phased contigs [hifiasm]
+hifiasm \
+-t $threads \
+-o $out_dir/desiree_$asm_version.asm \
+$hifi \
+--h1 $hic_1 \
+--h2 $hic_2 \
+--hom-cov 95 \
+--n-hap 4 \
+-s 0.45 \
+--n-perturb 20000 \
+--f-perturb 0.2 \
+--n-weight 6 2> \
+$out_dir/desiree_$asm_version.log
+
+# Convert gfas to fastas
+for file in $out_dir/*.gfa; do
+  if [[ "$file" != *noseq.gfa ]]; then
+    file_name=$(basename "$file" .gfa)
+    gfatools gfa2fa $file > $out_dir/$file_name.fa
+  fi
+done
+
+# Merqury quality control
+
+for file in $out_dir/*.fa
+do
+assembly1=$file
+assembly2=""
+out_name=$(basename "$file" .fa | sed "s/\./_/g")
+maxcov=200
+maxcount=15000000
+threads=20
+OMP_NUM_THREADS=$threads
+export OMP_NUM_THREADS
+
+mkdir $wd
+cd $wd
+
+merqury.sh $meryl_db \
+$assembly1 \
+$assembly2 \
+merqury > \
+merqury_$out_name.log
+
+for i in $(basename -s .qv "$out_dir"/*.qv)
+ do
+  Rscript plot_spectra_cn.R \
+  -f "$i".spectra-cn.hist \
+  -o "$i".spectra-cn \
+  -z "$i".only.hist \
+  -m $maxcov \
+  -n $maxcount
+ done
+
+Rscript plot_spectra_cn.R \
+-f merqury.spectra-asm.hist \
+-o merqury.spectra-asm \
+-z merqury.dist_only.hist \
+-m $maxcov \
+-n $maxcount
+
+done
+
+# Removal of contaminants contigs [blast]
+
+# run blast against organellar sequences
+for db_name in rDNA_solanum_2023-07-17 chloroplasts_solanum_2.1_2023-07-17 chloroplasts_solanum_1.1_2023-07-17 mitochondira_solanum_1.1_2023-07-17
+ do
+  blastn -task megablast \
+  -outfmt "6 qseqid sseqid length qlen" -num_threads $threads \
+  -query $input_asm \
+  -db $blast_dbs/$db_name \
+  -out $blast_outdir/$input_asm_name/"$db_name"_results.txt
+ done
+
+## mask assembly for blast against bacterial db
+windowmasker \
+-mk_counts -sformat obinary -genome_size 750000000 -mem 500000 \
+-in $input_asm -out $masked_db
+
+## run blast against bacterial sequences
+blastn -task megablast \
+-outfmt "6 qseqid sseqid length qlen" -num_threads $threads \
+-window_masker_db $masked_db \
+-query $input_asm \
+-db $blast_dbs/$db_name \
+-out $blast_outdir/$input_asm_name/"$db_name"_results.txt
