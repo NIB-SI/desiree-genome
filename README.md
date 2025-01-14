@@ -8,7 +8,7 @@ By using PacBio HiFi and Hi-C data only we were able to generate phased chromoso
 
 ## Pipeline overview
 
- ![alt text](figures\pipeline.png "Pipeline overview")
+ ![alt text](figures/pipeline.png "Pipeline overview")
 
  Commands used to generate the assembly and annotation are located in [`scripts`](https://github.com/NIB-SI/desiree-genome/scripts).
 
