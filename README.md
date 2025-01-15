@@ -10,7 +10,7 @@ By using PacBio HiFi and Hi-C data only we were able to generate phased chromoso
 
  ![alt text](figures/pipeline.png "Pipeline overview")
 
- Commands used to generate the assembly and annotation are located in [`scripts`](https://github.com/NIB-SI/desiree-genome/scripts).
+ Commands used to generate the assembly and annotation are located in [`scripts`](https://github.com/NIB-SI/desiree-genome/tree/main/scripts).
 
 1. `assembly.txt` - assembly of initial phased sets of contigs with *hifiasm*
 2. `scaffolding.txt` - scaffolding to chromosomes with *YaHs*
@@ -20,4 +20,8 @@ By using PacBio HiFi and Hi-C data only we were able to generate phased chromoso
 ## Citation
 If you are using this genome in your research, please cite:
 
--- add biorxiv CITATION
+**Haplotype-resolved genome assembly of the tetraploid potato cultivar Desiree**  
+Godec T, Beier S, Rodriguez-Granados N, Sasidharan R, Abdelhakim L, Teige M, Usadel B, Gruden K, Petek M,  
+*bioRxiv 2025.01.14.631659*  
+doi: https://doi.org/10.1101/2025.01.14.631659
+
