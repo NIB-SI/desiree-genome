@@ -1,0 +1,272 @@
+# Configuration properties for Mikado.
+#
+db_settings:
+  # Settings related to DB connection
+  # db: the DB to connect to. Required. Default: mikado.db
+  db: mikado.db
+  # dbtype: Type of DB to use. Choices: sqlite, postgresql, mysql. Default:
+  # sqlite.
+  dbtype: sqlite
+pick:
+  alternative_splicing:
+    # Parameters related to how Mikado will select and report alternative
+    # splicing events.
+    # pad: Boolean flag. If set to true, Mikado will pad transcripts. Please
+    # refer to the online documentation.
+    pad: true
+  chimera_split:
+    # Parameters related to the splitting of transcripts in the presence of
+    # two or more ORFs.
+    # blast_check: Whether to use BLAST information to take a decision. See blast_params
+    # for details.
+    blast_check: true
+    blast_params:
+      # Parameters for the BLAST check prior to splitting.
+      # leniency: One of 'STRINGENT', 'LENIENT', 'PERMISSIVE'. Please refer to the
+      # online documentation for details. Default: STRINGENT
+      leniency: STRINGENT
+    # execute: Whether to split multi-ORF transcripts at all. Boolean.
+    execute: true
+    skip:
+    # Input sources for which Mikado will skip the splitting, e.g. ultra-
+    # reliable full cDNA sequences.
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+  files:
+    # Input and output files for Mikado pick.
+    # input: Input GTF/GFF3/BED12 file. Default: mikado_prepared.gtf
+    input: mikado_prepared.gtf
+    # monoloci_out: optional GFF file with the intermediate monoloci. Default: no output
+    monoloci_out: ''
+    # output_dir: Output directory for mikado pick
+    output_dir: ./output
+    # subloci_out: Optional GFF file with the intermediate subloci. Default: no output
+    subloci_out: ''
+  run_options:
+    # Generic run options for Mikado pick.
+    # check_references: boolean flag. If set to true, transcripts marked as reference will
+    # still be checked for compliance with the requirements established in
+    # the scoring file.
+    check_references: true
+    intron_range:
+    # A range where most of the introns (99%) should fall into. Transcripts
+    # with too many introns larger or smaller than what is defined in this
+    # range will be penalised in the scoring. Default: [60, 900]
+    - 60
+    - 10000
+  # scoring_file: Scoring file to be used by Mikado.
+  scoring_file: plant.yaml
+prepare:
+  files:
+    exclude_redundant:
+    # If the 'exclude_redundant' switch is set to true, this list specifies
+    # which assemblies can have the redundancy check performed on.
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    - true
+    gff:
+    # List of the input files.
+    - DM_v6.1_working_liftoff_polished.gff3
+    - StPGSC_v4.04n_ITAG_liftoff_polished.gff3
+    - StPGSC_v4.04n_PGSC_liftoff_polished.gff3
+    - helixer.gff
+    - isoseq_isoquant.gtf
+    - braker_2.gff
+    - altus.gff
+    - avenger.gff
+    - colomba.gff
+    - rywal.gff
+    - spunta.gff
+    - adapt.gtf
+    - bacillus.gtf
+    - cpb.gtf
+    - dex.gtf
+    - jaga.gtf
+    - saga.gtf
+    - waterlogging.gtf
+    labels:
+    # List of labels associated with each input GFF. This list must *either*
+    # be empty *or* be the same length as the 'gff' content above.
+    - DM_v6_w
+    - DM_v4_ITAG
+    - DM_v4_PGSC
+    - helixer
+    - isoquant
+    - braker
+    - altus
+    - avenger
+    - colomba
+    - rywal
+    - spunta
+    - adapt
+    - bacillus
+    - cpb
+    - dex
+    - jaga
+    - saga
+    - waterlogging
+    # output_dir: Output folder.
+    output_dir: ./output
+    reference:
+    # List of input assemblies to be considered as of 'reference' quality.
+    # Transcripts from this list will be excluded only if they have glaring
+    # mistakes eg. an incorrect CDS.
+    - true
+    - true
+    - true
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    source_score:
+      # Dictionary linking assemblies with an optional score, for prioritising
+      # them during 'pick' (or de-prioritising if the score is negative).
+      DM_v4_ITAG: 5.0
+      DM_v4_PGSC: 5.0
+      DM_v6_w: 6.0
+      adapt: 5.0
+      altus: 2.0
+      avenger: 2.0
+      bacillus: 5.0
+      braker: 3.0
+      colomba: 2.0
+      cpb: 5.0
+      dex: 5.0
+      helixer: 3.0
+      isoquant: 4.0
+      jaga: 5.0
+      rywal: 2.0
+      saga: 5.0
+      spunta: 2.0
+      waterlogging: 5.0
+    strand_specific_assemblies:
+    # List of input assemblies to be considered as strand specific. Any
+    # 'reference' input is automatically marked as strand-specific.
+    - /scratch/timg/desiree_annotation/liftoff/De_v1_hap4_chrs/output/De_v1_hap4_chrs.DM_v6.1_working_liftoff_polished.gff3
+    - /scratch/timg/desiree_annotation/liftoff/De_v1_hap4_chrs/output/De_v1_hap4_chrs.StPGSC_v4.04n_ITAG_liftoff_polished.gff3
+    - /scratch/timg/desiree_annotation/liftoff/De_v1_hap4_chrs/output/De_v1_hap4_chrs.StPGSC_v4.04n_PGSC_liftoff_polished.gff3
+    - /scratch/timg/desiree_annotation/helixer/De_v1_hap4_chrs_helixer.gff
+    - /scratch/timg/desiree_annotation/isoquant/De_v1_hap4_chrs/isoseq_isoquant.gtf
+    - /scratch/timg/desiree_annotation/data/annotations/De_v1_hap4_chrs/braker_2.gff
+    - /scratch/timg/desiree_annotation/data/annotations/De_v1_hap4_chrs/altus.gff
+    - /scratch/timg/desiree_annotation/data/annotations/De_v1_hap4_chrs/avenger.gff
+    - /scratch/timg/desiree_annotation/data/annotations/De_v1_hap4_chrs/colomba.gff
+    - /scratch/timg/desiree_annotation/data/annotations/De_v1_hap4_chrs/rywal.gff
+    - /scratch/timg/desiree_annotation/data/annotations/De_v1_hap4_chrs/spunta.gff
+    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/adapt.gtf
+    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/bacillus.gtf
+    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/cpb.gtf
+    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/dex.gtf
+    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/jaga.gtf
+    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/saga.gtf
+    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/waterlogging.gtf
+    strip_cds:
+    # List of input assemblies from which the CDS will be stripped. Useful
+    # to e.g. remove the CDS from GMAP alignments.
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+    - false
+  # max_intron_length: Maximum length of an intron. Transcripts with introns bigger than this
+  # value will be split in various sub-transcripts. Default: 1,000,000
+  # bps.
+  max_intron_length: 1000000
+  # minimum_cdna_length: Minimum length of a transcript to be retained. Default: 200 bps
+  minimum_cdna_length: 200
+  # strand_specific: Boolean flag. If set to true, all assemblies will be considered as
+  # strand-specific. By default, Mikado will consider the strand-
+  # specificity of each assembly in isolation, see
+  # 'files/strand_specific_assemblies'.
+  strand_specific: false
+reference:
+  genome: De_v1_hapX_chrs.fa
+# seed: Random number generator seed, to ensure reproducibility across runs.
+# Set to None('null' in YAML/JSON/TOML files) to let Mikado select a
+# random seed every time.
+seed: 0
+serialise:
+  # Settings related to data serialisation
+  # codon_table: codon table to use for verifying/modifying the ORFs. Default: 0, ie
+  # the universal codon table but enforcing ATG as the only valid start
+  # codon.
+  codon_table: 0
+  files:
+    blast_targets:
+    # FASTA file(s) with the BLAST targets.
+    - uniprot_plants.fa
+    junctions:
+    # File of reliable junctions (from e.g. Portcullis), in BED12 format
+    - portcullis_filtered.pass.junctions.bed
+    output_dir: ./output
+    # transcripts: Input transcripts in FASTA format, ie the output of Mikado prepare.
+    transcripts: mikado_prepared.fasta
+  # max_regression: if the ORF lacks a valid start site, this percentage indicates how far
+  # along the sequence Mikado should look for a good start site. Eg. with
+  # a value of 0.1, on a 300bp sequence with an open ORF Mikado would look
+  # for an alternative in-frame start codon in the first 30 bps (10% of
+  # the cDNA).
+  max_regression: 0.2
+  # substitution_matrix: Substitution matrix used for the BLAST. This value will be derived
+  # from the XML files, but it must be provided here or on the command
+  # line when using BLAST tabular data. Default: blosum62, the default for
+  # both BLAST and DIAMOND.
+  substitution_matrix: blosum62
+# threads: Threads to be used per process
+threads: 1
+
