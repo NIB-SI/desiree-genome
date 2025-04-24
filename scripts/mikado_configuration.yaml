@@ -184,24 +184,24 @@ prepare:
     strand_specific_assemblies:
     # List of input assemblies to be considered as strand specific. Any
     # 'reference' input is automatically marked as strand-specific.
-    - /scratch/timg/desiree_annotation/liftoff/De_v1_hap4_chrs/output/De_v1_hap4_chrs.DM_v6.1_working_liftoff_polished.gff3
-    - /scratch/timg/desiree_annotation/liftoff/De_v1_hap4_chrs/output/De_v1_hap4_chrs.StPGSC_v4.04n_ITAG_liftoff_polished.gff3
-    - /scratch/timg/desiree_annotation/liftoff/De_v1_hap4_chrs/output/De_v1_hap4_chrs.StPGSC_v4.04n_PGSC_liftoff_polished.gff3
-    - /scratch/timg/desiree_annotation/helixer/De_v1_hap4_chrs_helixer.gff
-    - /scratch/timg/desiree_annotation/isoquant/De_v1_hap4_chrs/isoseq_isoquant.gtf
-    - /scratch/timg/desiree_annotation/data/annotations/De_v1_hap4_chrs/braker_2.gff
-    - /scratch/timg/desiree_annotation/data/annotations/De_v1_hap4_chrs/altus.gff
-    - /scratch/timg/desiree_annotation/data/annotations/De_v1_hap4_chrs/avenger.gff
-    - /scratch/timg/desiree_annotation/data/annotations/De_v1_hap4_chrs/colomba.gff
-    - /scratch/timg/desiree_annotation/data/annotations/De_v1_hap4_chrs/rywal.gff
-    - /scratch/timg/desiree_annotation/data/annotations/De_v1_hap4_chrs/spunta.gff
-    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/adapt.gtf
-    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/bacillus.gtf
-    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/cpb.gtf
-    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/dex.gtf
-    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/jaga.gtf
-    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/saga.gtf
-    - /scratch/timg/desiree_annotation/stringtie/De_v1_hap4_chrs/waterlogging.gtf
+    - DM_v6.1_working_liftoff_polished.gff3
+    - StPGSC_v4.04n_ITAG_liftoff_polished.gff3
+    - StPGSC_v4.04n_PGSC_liftoff_polished.gff3
+    - helixer.gff
+    - isoseq_isoquant.gtf
+    - braker_2.gff
+    - altus.gff
+    - avenger.gff
+    - colomba.gff
+    - rywal.gff
+    - spunta.gff
+    - adapt.gtf
+    - bacillus.gtf
+    - cpb.gtf
+    - dex.gtf
+    - jaga.gtf
+    - saga.gtf
+    - waterlogging.gtf
     strip_cds:
     # List of input assemblies from which the CDS will be stripped. Useful
     # to e.g. remove the CDS from GMAP alignments.
