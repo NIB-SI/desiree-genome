@@ -4,7 +4,7 @@ By using PacBio HiFi and Hi-C data only we were able to generate phased chromoso
 
 ## Download
 
- Genome assembly and annotation files are available at [Zenodo](https://doi.org/10.5281/zenodo.14609304) and [desiree.nib.si](https://desiree.nib.si)
+ Genome assembly and annotation files are available at [Zenodo](https://doi.org/10.5281/zenodo.14609303) and [desiree.nib.si](https://desiree.nib.si)
 
 ## Pipeline overview
 
@@ -20,8 +20,8 @@ By using PacBio HiFi and Hi-C data only we were able to generate phased chromoso
 ## Citation
 If you are using this genome in your research, please cite:
 
-**Haplotype-resolved genome assembly of the tetraploid potato cultivar Desiree**  
-Godec T, Beier S, Rodriguez-Granados N, Sasidharan R, Abdelhakim L, Teige M, Usadel B, Gruden K, Petek M,  
-*bioRxiv 2025.01.14.631659*  
-doi: https://doi.org/10.1101/2025.01.14.631659
+**Haplotype-resolved genome assembly of the tetraploid potato cultivar Désirée**  
+Godec T, Beier S, Rodriguez-Granados N, Sasidharan R, Abdelhakim L, Teige M, Usadel B, Gruden K, Petek M  
+*Sci Data 12, 1044 (2025)*  
+doi: [https://doi.org/10.1101/2025.01.14.631659](https://doi.org/10.1038/s41597-025-05372-3)
 
